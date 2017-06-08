@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="http://openlayers.org/en/v3.15.1/css/ol.css" type="text/css">
+    <link
+      href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600italic,600"
+      rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+    <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+    <script src="http://openlayers.org/en/v3.15.1/build/ol.js" type="text/javascript"></script>
+    <title>Varian B</title>
+    <style>
+    html, body {
+    font-family: 'Open Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    font-weight: 300;
+    letter-spacing: -0.5px;
+    }
+    .ui-content{
+      margin: 0;
+      padding: 0;
+    }
+    #map {
+    position: fixed;
+    box-sizing: border-box;
+    height: 100%;
+    width: 100%;
+    }
+    </style>
+##meta_tags##
+<title>##title_tag##</title>
+  </head>
+  <body>
+	<!-- Start of first page -->
+	<div data-role="page" id="foo">
+		<div data-role="header"><a id="inrapp" href="#bar" data-icon="plus" class="ui-btn-left">Ny inrapportering</a><span class="ui-title" /></div><!-- /header -->
+		<div role="main" class="ui-content" id="map" class="map"></div><!-- /content -->
+	</div><!-- /page -->
+	<!-- Start of second page -->
+	<div data-role="page" id="bar">
+		<div data-role="header"><center>Ny inrapportering</center></div><!-- /header -->
+		<div role="main" class="ui-content">
+			<form action="javascript:alert(tnx)" method="POST">
+				<label for="name">Namn:</label><br />
+				<input type="text" id="name" name="user_name"> 
+				<label for="name">Typ:</label><br />
+				<select>
+					<option value="vagbom">Vägbom</option>
+					 <option value="stenhinder">Stenhinder</option>
+					 <option value="grind">Grind</option>
+				</select>
+				<label for="name">Ladda upp fil:</label><br />
+					<input type="file" id="files" name="files[]" multiple />
+					<output id="list"></<output></output>
+				<div class="button">
+					<button data-icon="plus" type="submit">Ny Registrering</button>
+				</div>
+			</form> 
+			<a href="#foo" data-role="button" data-icon="arrow-l">Tillbaka </a>
+		</div><!-- /content -->
+	</div><!-- /page -->	
+    <script type="text/javascript">
+	  var tnx = "Tack för din registrering!";
+	  function init(){
+        const extent = [ -1200000, 4700000, 2600000, 8500000 ];
+        const resolutions = [ 4096.0, 2048.0, 1024.0, 512.0, 256.0, 128.0, 64.0, 32.0, 16.0, 8.0 ];
+        const matrixIds = [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ];
+        const tileGrid = new ol.tilegrid.WMTS({
+          tileSize : 256,
+          extent : extent,
+          resolutions : resolutions,
+          matrixIds : matrixIds
+        });
+        const apiKey = 'b3b7d88b2dca75b2b31a20a77f6707f';
+        const	wmts = new ol.layer.Tile({
+          extent : extent,
+          source : new ol.source.WMTS({
+            url : 'https://api.lantmateriet.se/open/topowebb-ccby/v1/wmts/token/' + apiKey + '/',
+            layer : 'topowebb',
+            format : 'image/png',
+            matrixSet : '3006',
+            tileGrid : tileGrid,
+            version : '1.0.0',
+            style : 'default',
+            crossOrigin: 'anonymous'
+        	})
+        });
+        const	interactions = ol.interaction.defaults({
+          altShiftDragRotate : false,
+          pinchRotate : false
+        });
+        const source = new ol.source.Vector({wrapX: false});
+        const vector = new ol.layer.Vector({source: source});
+        var map = new ol.Map({
+          target : 'map',
+          layers : [ wmts, vector],
+          logo : false,
+          interactions : interactions,
+          view : new ol.View({
+            extent : extent,
+            center : [ 616542, 6727536 ],
+            zoom : 5,
+            resolutions : resolutions
+          })
+        });
+        map.updateSize();
+        var draw;
+        function addInteraction(){
+          var value = 'Point';
+          draw = new ol.interaction.Draw({
+            source: source,
+            type: /** @type {ol.geom.GeomtryType} */ ('Point')
+          });
+          map.addInteraction(draw);
+        }
+        map.on('singleclick', function(e) {
+          var s = vector.getSource();
+          var f = s.getFeatures();
+          if(f.length > 0) {
+            for(var i = 0; i < f.length - 1; i++){
+              vector.getSource().removeFeature(f[i]);
+            }
+          }
+        });
+        addInteraction();
+        map.updateSize();	
+      };
+      document.addEventListener('DOMContentLoaded', init);
+    </script>
+  ##statistics##
+  </body>
+</html>
